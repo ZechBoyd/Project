@@ -1,0 +1,77 @@
+/*************************/
+/* Name: Shopping Cart*/
+/* February 26, 2025*/
+/* Author: Terrance Duncan Jr. */
+/*************************/
+#include <iostream>
+#include <iomanip> // For formatting output
+using namespace std;
+
+int main() {
+    int many = 0, count = 0;
+    double gtotal = 0.0, maximum, available, cost, price, discountPercent, total, x;
+    
+    cout << "What is your maximum spending? ";
+    cin >> maximum;
+    available = maximum;
+
+    while (gtotal < maximum) {
+        cout << "You have $" << fixed << setprecision(2) << available << " dollars to spend. Select your items by choosing the number of the Item from the list below or 0 to check out." << endl;
+        cout << "1) Roses = $75.00 per 1/2 Dozen (25% discount)" << endl;
+        cout << "2) Hair Extensions = $100 per pack (10% Discount)" << endl;
+        cout << "3) Male Jeans = $150.00" << endl;
+        cout << "4) Female Jeans = $175.00 (5% discount)" << endl;
+        cout << "5) Jordans = $200.00" << endl;
+        cout << "Enter the number corresponding to the item you desire: ";
+        int item;
+        cin >> item;
+
+        if (item == 0) {
+            gtotal = maximum + 1; // Exit loop
+            cout << "You have $" << fixed << setprecision(2) << available << " dollars left on your card, you have " << count << " items in your cart. Your total cost is $" << fixed << setprecision(2) << x << ". Thank you for shopping with THE BEST OF BC!" << endl;
+        } else {
+            if (item == 1) cost = 75.0;
+            else if (item == 2) cost = 100.0;
+            else if (item == 3) cost = 150.0;
+            else if (item == 4) cost = 175.0;
+            else if (item == 5) cost = 200.0;
+            else {
+                cout << "Invalid item selection. Please try again." << endl;
+                continue;
+            }
+
+            cout << "How many of this item would you like? ";
+            cin >> many;
+            cost *= many;
+
+            cout << "Does this item have a discount? Enter 1 for yes or 2 for no: ";
+            int discountChoice;
+            cin >> discountChoice;
+
+            if (discountChoice == 1) {
+                cout << "What is the % of the discount? ";
+                cin >> discountPercent;
+                double discount = cost * discountPercent / 100.0;
+                price = cost - discount;
+            } else {
+                price = cost;
+            }
+
+            count += many;
+            total = price + price * 0.07; // Adding 7% tax
+
+            if (total > available) {
+                cout << "You only have $" << fixed << setprecision(2) << available << ". You cannot make this purchase." << endl;
+                total = 0;
+                count -= many;
+            } else {
+                gtotal += total;
+                x = gtotal;
+                cout << "You now have " << count << " items in your cart. Your total so far is $" << fixed << setprecision(2) << gtotal << "." << endl;
+                available = maximum - gtotal;
+            }
+        }
+    }
+
+    return 0;
+}
