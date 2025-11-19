@@ -1,8 +1,4 @@
-/*************************/
-/* Name: Shopping Cart*/
-/* February 26, 2025*/
-/* Author: Terrance Duncan Jr. */
-/*************************/
+
 #include <iostream>
 #include <iomanip> // For formatting output
 using namespace std;
