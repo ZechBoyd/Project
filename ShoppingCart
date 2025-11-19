@@ -1,72 +1,141 @@
-
 #include <iostream>
-#include <iomanip> // For formatting output
+#include <iomanip>
+#include <vector>
+#include <string>
+
 using namespace std;
 
+// Represents a product in the store
+class Product {
+public:
+    string name;
+    double basePrice;
+    double defaultDiscount; // stored as percentage (e.g., 25.0)
+
+    Product(string n, double price, double disc = 0.0)
+        : name(n), basePrice(price), defaultDiscount(disc) {}
+};
+
+// Manages the user's shopping session
+class ShoppingCart {
+private:
+    double maxBudget;
+    double currentTotal;
+    int itemCount;
+    vector<Product> catalog;
+
+public:
+    ShoppingCart(double budget) 
+        : maxBudget(budget), currentTotal(0.0), itemCount(0) {
+        // Initialize product catalog using push_back (C++98/03 compatible)
+        catalog.push_back(Product("Roses (1/2 Dozen)", 75.0, 25.0));
+        catalog.push_back(Product("Hair Extensions", 100.0, 10.0));
+        catalog.push_back(Product("Male Jeans", 150.0, 0.0));
+        catalog.push_back(Product("Female Jeans", 175.0, 5.0));
+        catalog.push_back(Product("Jordans", 200.0, 0.0));
+    }
+
+    void displayCatalog() const {
+        cout << "You have $" << fixed << setprecision(2) << (maxBudget - currentTotal)
+             << " dollars to spend. Select your items or 0 to check out:" << endl;
+        for (size_t i = 0; i < catalog.size(); ++i) {
+            cout << (i + 1) << ") " << catalog[i].name << " = $"
+                 << fixed << setprecision(2) << catalog[i].basePrice;
+            if (catalog[i].defaultDiscount > 0) {
+                cout << " (" << catalog[i].defaultDiscount << "% discount)";
+            }
+            cout << endl;
+        }
+    }
+
+    void checkout() const {
+        cout << "You have $" << fixed << setprecision(2) << (maxBudget - currentTotal)
+             << " dollars left on your card, you have " << itemCount
+             << " items in your cart. Your total cost is $"
+             << fixed << setprecision(2) << currentTotal
+             << ". Thank you for shopping with THE BEST OF BC!" << endl;
+    }
+
+    bool purchaseItem(int choice, int quantity) {
+        if (choice < 1 || choice > static_cast<int>(catalog.size())) {
+            cout << "Invalid item selection. Please try again." << endl;
+            return false;
+        }
+
+        const Product& prod = catalog[choice - 1];
+
+        cout << "Does this item have a discount? Enter 1 for yes or 2 for no: ";
+        int discountChoice;
+        cin >> discountChoice;
+
+        double customDiscount = -1.0; // -1 means "use default"
+        if (discountChoice == 1) {
+            cout << "What is the % of the discount? ";
+            cin >> customDiscount;
+        }
+
+        double subtotal = prod.basePrice * quantity;
+        double finalDiscount = (customDiscount >= 0.0) ? customDiscount : prod.defaultDiscount;
+        double discountAmount = subtotal * (finalDiscount / 100.0);
+        double priceAfterDiscount = subtotal - discountAmount;
+        double totalPrice = priceAfterDiscount * 1.07; // +7% tax
+
+        if (totalPrice > (maxBudget - currentTotal)) {
+            cout << "You only have $" << fixed << setprecision(2) << (maxBudget - currentTotal)
+                 << ". You cannot make this purchase." << endl;
+            return false;
+        }
+
+        currentTotal += totalPrice;
+        itemCount += quantity;
+        cout << "You now have " << itemCount << " items in your cart. "
+             << "Your total so far is $" << fixed << setprecision(2) << currentTotal << "." << endl;
+        return true;
+    }
+};
+
+// Main function — handles I/O and flow
 int main() {
-    int many = 0, count = 0;
-    double gtotal = 0.0, maximum, available, cost, price, discountPercent, total, x;
-    
+    double maxSpending;
     cout << "What is your maximum spending? ";
-    cin >> maximum;
-    available = maximum;
+    cin >> maxSpending;
 
-    while (gtotal < maximum) {
-        cout << "You have $" << fixed << setprecision(2) << available << " dollars to spend. Select your items by choosing the number of the Item from the list below or 0 to check out." << endl;
-        cout << "1) Roses = $75.00 per 1/2 Dozen (25% discount)" << endl;
-        cout << "2) Hair Extensions = $100 per pack (10% Discount)" << endl;
-        cout << "3) Male Jeans = $150.00" << endl;
-        cout << "4) Female Jeans = $175.00 (5% discount)" << endl;
-        cout << "5) Jordans = $200.00" << endl;
+    ShoppingCart cart(maxSpending);
+
+    while (true) {
+        cart.displayCatalog();
         cout << "Enter the number corresponding to the item you desire: ";
-        int item;
-        cin >> item;
 
-        if (item == 0) {
-            gtotal = maximum + 1; // Exit loop
-            cout << "You have $" << fixed << setprecision(2) << available << " dollars left on your card, you have " << count << " items in your cart. Your total cost is $" << fixed << setprecision(2) << x << ". Thank you for shopping with THE BEST OF BC!" << endl;
-        } else {
-            if (item == 1) cost = 75.0;
-            else if (item == 2) cost = 100.0;
-            else if (item == 3) cost = 150.0;
-            else if (item == 4) cost = 175.0;
-            else if (item == 5) cost = 200.0;
-            else {
-                cout << "Invalid item selection. Please try again." << endl;
-                continue;
-            }
+        int itemChoice;
+        cin >> itemChoice;
 
-            cout << "How many of this item would you like? ";
-            cin >> many;
-            cost *= many;
+        if (itemChoice == 0) {
+            cart.checkout();
+            break;
+        }
 
-            cout << "Does this item have a discount? Enter 1 for yes or 2 for no: ";
-            int discountChoice;
-            cin >> discountChoice;
+        cout << "How many of this item would you like? ";
+        int quantity;
+        cin >> quantity;
 
-            if (discountChoice == 1) {
-                cout << "What is the % of the discount? ";
-                cin >> discountPercent;
-                double discount = cost * discountPercent / 100.0;
-                price = cost - discount;
-            } else {
-                price = cost;
-            }
+        if (quantity <= 0) {
+            cout << "Quantity must be positive. Skipping." << endl;
+            continue;
+        }
 
-            count += many;
-            total = price + price * 0.07; // Adding 7% tax
+        bool purchased = cart.purchaseItem(itemChoice, quantity);
 
-            if (total > available) {
-                cout << "You only have $" << fixed << setprecision(2) << available << ". You cannot make this purchase." << endl;
-                total = 0;
-                count -= many;
-            } else {
-                gtotal += total;
-                x = gtotal;
-                cout << "You now have " << count << " items in your cart. Your total so far is $" << fixed << setprecision(2) << gtotal << "." << endl;
-                available = maximum - gtotal;
+        if (purchased) {
+            char confirm;
+            cout << "Would this be all for your cart? (y/n): ";
+            cin >> confirm;
+
+            if (confirm == 'y' || confirm == 'Y') {
+                cart.checkout();
+                break;
             }
         }
+        // If purchase failed or user said 'n', loop continues
     }
 
     return 0;
